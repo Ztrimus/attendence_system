@@ -21,9 +21,10 @@ class_lat, class_lon = 33.414621602365465, -111.90984407791874
 def get_current_location():
     g = geocoder.ip('me')
     if g.ok:
-        return g.latlng
+        lat, lng = g.latlng
+        return lat, lng, g.ip
     else:
-        return None, None
+        return None, None, None
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate the distance between two coordinates in kilometers."""
@@ -34,14 +35,6 @@ def verify_location(student_lat, student_lon, class_lat, class_lon, max_distance
     distance = calculate_distance(student_lat, student_lon, class_lat, class_lon)
     return distance <= max_distance_km
 
-from urllib.request import urlopen
-import re as r
-
-def get_ip():
-    d = str(urlopen('http://checkip.dyndns.com/').read())
-
-    return r.compile(r'Address: (\d+\.\d+\.\d+\.\d+)').search(d).group(1)
-
 def main():
     st.title("Location-based Attendance System")
 
@@ -50,10 +43,7 @@ def main():
     student_id = st.text_input("Student ID")
 
     if st.button("Submit Attendance"):
-        # Check student device IP
-        student_ip = get_ip()
-        # Get current location
-        student_lat, student_lon = get_current_location()
+        student_lat, student_lon, student_ip = get_current_location()
 
         if student_ip in st.session_state['attendences']['ip_address'].values:
             st.error("You have already marked your attendance.")
